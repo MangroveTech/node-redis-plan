@@ -2,6 +2,7 @@
 var redis = require('redis');
 var EventEmitter = require('events').EventEmitter;
 var planKeys = require('./plan-keys.json');
+var defaultOpt = require('./option.json');
 
 function plan(key, value) {
   if (arguments.length !== 2) {
@@ -33,6 +34,7 @@ function emit(name, data) {
 
 function on(name, cb) {
   var self = this;
+  var option = self.option;
   if (planKeys.indexOf(name) !== -1) {
     return this.emitter.on(name, cb);
   }
@@ -46,14 +48,25 @@ function on(name, cb) {
     if (key !== name) {
       return self.emitter.emit('error', 'name confict');
     }
+
+    pre();
     cb(JSON.parse(replies[1]), next);
+    check();
+  }
+
+  function pre() {
+    self.workerCount++;
+  }
+
+  function check() {
+    if (self.workerCount < option.maxCount) {
+      self.conn.blpop(name, 0, popcb);
+    }
   }
 
   function next(err) {
-    if (err) {
-      self.emitter.emit('error', err);
-    }
-    self.conn.blpop(name, 0, popcb);
+    self.workerCount--;
+    check();
   }
 }
 
@@ -62,8 +75,9 @@ module.exports = function(port, host, option) {
   env.conn = redis.createClient.apply(this, arguments);
   env.port = port;
   env.host = host;
-  env.option = option || {};
+  env.option = option || defaultOpt;
   env.emitter = new EventEmitter();
+  env.workerCount = 0;
   env.conn.on('error', function(err) {
     emit.call(env, 'error', err);
   });
@@ -71,6 +85,12 @@ module.exports = function(port, host, option) {
   var ret = plan.bind(env);
   ret.end = function() {
     env.conn.end();
+    return ret;
   };
+  ret.set = function(name, value) {
+    env.option[name] = value;
+    return ret;
+  };
+
   return ret;
 };

@@ -35,6 +35,25 @@ plan('your queue name in redis', function(data, next) {
 
 In the end, remeber that calling `plan.end()` to close the connection to redis.
 
+### Parallel Worker
+```js
+var plan = require('../')();
+plan.set('maxCount', 100);
+plan('parallel', function(data, next) {
+  console.log(data);
+  setTimeout(next, 3000);
+});
+```
+
+### Parallel Queueing
+```js
+var plan = require('../')();
+// just a simple for loop
+for (var i=0; i<10; i++) {
+  plan('parallel', data);
+}
+```
+
 ### TODO
 
 multi-channels support
