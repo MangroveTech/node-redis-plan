@@ -1,0 +1,30 @@
+{
+  "name": "redis-plan",
+  "version": "0.0.1",
+  "description": "MQ for nodejs",
+  "main": "index.js",
+  "scripts": {
+    "test": "tape tests/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MangroveTech/node-redis-plan.git"
+  },
+  "keywords": [
+    "redis",
+    "message",
+    "message-queue"
+  ],
+  "dependencies": {
+    "redis": "*"
+  },
+  "devDependencies": {
+    "tape": "*"
+  },
+  "author": "Yorkie Neil <yorkiefixer@gmail.com> (http://yorkiefixer.me)",
+  "license": "ZLIB",
+  "bugs": {
+    "url": "https://github.com/MangroveTech/node-redis-plan/issues"
+  },
+  "homepage": "https://github.com/MangroveTech/node-redis-plan"
+}
