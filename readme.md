@@ -6,6 +6,8 @@ Message queue based on redis for NodeJS and Mangrove internal usage.
 
 [![Build Status](https://travis-ci.org/MangroveTech/node-redis-plan.svg)](https://travis-ci.org/MangroveTech/node-redis-plan)
 
+[![NPM](https://nodei.co/npm/redis-plan.png?stars&downloads)](https://nodei.co/npm/redis-plan/) [![NPM](https://nodei.co/npm-dl/redis-plan.png)](https://nodei.co/npm/redis-plan/)
+
 ### Installation
 ```sh
 $ npm install redis-plan
