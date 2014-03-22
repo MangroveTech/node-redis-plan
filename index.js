@@ -22,6 +22,7 @@ function plan(key, value) {
 function emit(name, data) {
   var self = this;
   if (planKeys.indexOf(name) !== -1) {
+    emit.call(self, 'plan:'+name, data);
     return this.emitter.emit(name, data);
   }
   this.conn.rpush(name, JSON.stringify(data), function(err) {

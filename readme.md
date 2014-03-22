@@ -54,6 +54,22 @@ for (var i=0; i<10; i++) {
 }
 ```
 
+### Async Feedback
+```js
+plan('async-feedback', function(item, next) {
+  asyncMethod(item, function(err) {
+    next();
+    if (err) 
+      plan('error', err.stack);
+    else
+      plan('success', item);
+  });
+});
+```
+NB: `success` and `error` is 2 especial keys, which you could use to report
+data to redis and local event `success` and `error`, and in redis you are able
+to access these reports at `plan:success` and `plan:error`.
+
 ### TODO
 
 multi-channels support
