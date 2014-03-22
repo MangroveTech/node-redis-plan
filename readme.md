@@ -2,9 +2,9 @@
 redis-plan
 ================
 
-Message queue based redis for NodeJS and Mangrove internal usage.
+Message queue based on redis for NodeJS and Mangrove internal usage.
 
-[![Build Status](https://secure.travis-ci.org/MangroveTech/node-redis-plan.png)](http://travis-ci.org/MangroveTech/node-redis-plan)
+[![Build Status](https://travis-ci.org/MangroveTech/node-redis-plan.svg)](https://travis-ci.org/MangroveTech/node-redis-plan)
 
 ### Installation
 ```sh
