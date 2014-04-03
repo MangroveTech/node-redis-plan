@@ -49,9 +49,16 @@ function on(name, cb) {
     if (key !== name) {
       return self.emitter.emit('error', 'name confict');
     }
+    
+    var val;
+    try {
+      val = JSON.parse(replies[1]);
+    } catch (err) {
+      val = replies[1];
+    }
 
     pre();
-    cb(JSON.parse(replies[1]), next);
+    cb(val, next);
     check();
   }
 
