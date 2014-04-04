@@ -53,7 +53,7 @@ function on(name, cb) {
     var val;
     try {
       val = JSON.parse(replies[1]);
-    } catch (err) {
+    } catch (e) {
       val = replies[1];
     }
 
@@ -67,7 +67,7 @@ function on(name, cb) {
   }
 
   function check() {
-    if (self.workerCount < option.maxCount) {
+    if (self.workerCount < option.maxCount || !option.maxCount) {
       self.conn.blpop(name, 0, popcb);
     }
   }
