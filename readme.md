@@ -66,9 +66,17 @@ plan('async-feedback', function(item, next) {
   });
 });
 ```
-NB: `success` and `error` is 2 especial keys, which you could use to report
+NB: `success`, `close` and `error` is especial keys, which you could use to report
 data to redis and local event `success` and `error`, and in redis you are able
-to access these reports at `plan:success` and `plan:error`.
+to access these reports at `plan:success`, `plan:close` and `plan:error`.
+
+### Gracefully Quit
+```js
+process.on('exit', function() {
+  plan.close();
+});
+
+```
 
 ### TODO
 
