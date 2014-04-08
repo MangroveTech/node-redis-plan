@@ -67,6 +67,13 @@ function on(name, cb) {
   }
 
   function check() {
+    if (!self._ref) {
+      if (self.workerCount === 0) {
+        self.conn.end();
+        self.emitter.emit('close');
+      }
+      return;
+    }
     if (self.workerCount < option.maxCount || !option.maxCount) {
       self.conn.blpop(name, 0, popcb);
     }
@@ -80,6 +87,7 @@ function on(name, cb) {
 
 module.exports = function(port, host, option) {
   var env = {};
+  env._ref = true;
   env.conn = redis.createClient.apply(this, arguments);
   env.port = port;
   env.host = host;
@@ -91,8 +99,9 @@ module.exports = function(port, host, option) {
   });
 
   var ret = plan.bind(env);
-  ret.end = function() {
-    env.conn.end();
+  ret.close = function() {
+    env._ref = false;
+    env.conn.unref();
     return ret;
   };
   ret.set = function(name, value) {

@@ -17,7 +17,7 @@ test('emitter array', function(t) {
   plan('test2', excepted);
   plan('test2', function(data, next) {
     t.deepEqual(data, excepted);
-    plan.end();
+    plan.close();
   });
 });
 

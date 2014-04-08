@@ -14,7 +14,7 @@ test('emitter string', function(t) {
   plan('test1', excepted);
   plan('test1', function(data, next) {
     t.equal(data, excepted);
-    plan.end();
+    plan.close();
   });
 });
 
