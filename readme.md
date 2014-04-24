@@ -78,9 +78,5 @@ process.on('exit', function() {
 
 ```
 
-### TODO
-
-multi-channels support
-
 ### License
-ZLIB
+MIT
