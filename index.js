@@ -40,6 +40,7 @@ function on(name, cb) {
     return this.emitter.on(name, cb);
   }
   this.conn.blpop(name, 0, popcb);
+  this.blocking = true;
 
   function popcb(err, replies) {
     if (err) {
@@ -59,6 +60,7 @@ function on(name, cb) {
 
     pre();
     cb(val, next);
+    self.blocking = false;
     check();
   }
 
@@ -76,6 +78,7 @@ function on(name, cb) {
     }
     if (self.workerCount < option.maxCount || !option.maxCount) {
       self.conn.blpop(name, 0, popcb);
+      self.blocking = true;
     }
   }
 
@@ -100,8 +103,12 @@ module.exports = function(port, host, option) {
 
   var ret = plan.bind(env);
   ret.close = function() {
-    env._ref = false;
-    env.conn.unref();
+    if (env.blocking || env.blocking === undefined) {
+      env.conn.end();
+    } else {
+      env._ref = false;
+      env.conn.unref();
+    }
     return ret;
   };
   ret.set = function(name, value) {
