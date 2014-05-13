@@ -22,9 +22,9 @@
   },
   "homepage": "https://github.com/MangroveTech/node-redis-plan",
   "dependencies": {
-    "redis": "^0.10.1"
+    "redis": "~0.10.1"
   },
   "devDependencies": {
-    "tape": "^2.12.3"
+    "tape": "~2.12.3"
   }
 }
