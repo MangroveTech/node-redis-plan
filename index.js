@@ -1,120 +1,59 @@
-
 var redis = require('redis');
+var util = require('util');
 var EventEmitter = require('events').EventEmitter;
-var planKeys = require('./plan-keys.json');
-var defaultOpt = require('./option.json');
 
-function plan(key, value) {
-  if (arguments.length !== 2) {
-    emit('error', new Error('arguments error'));
+function Plan(port, host, options) {
+  EventEmitter.call(this);
+
+  if (!(this instanceof Plan)) {
+    return new Plan;
   }
-  switch (typeof value) {
-    case 'function':
-      on.call(this, key, value);
-      break;
-    default:
-      emit.call(this, key, value);
-      break;
-  }
-  return plan.bind(this);
+
+  this.conn = redis.createClient.apply(this, arguments);
 }
 
-function emit(name, data) {
-  var self = this;
-  if (planKeys.indexOf(name) !== -1) {
-    emit.call(self, 'plan:'+name, data);
-    return this.emitter.emit(name, data);
-  }
-  this.conn.rpush(name, JSON.stringify(data), function(err) {
-    if (err)
-      self.emitter.emit('error', err);
-    else
-      self.emitter.emit('success', data);
-  });
-}
+util.inherits(Plan, EventEmitter);
 
-function on(name, cb) {
+Plan.prototype.enqueue = function enqueue(list, task, callback) {
   var self = this;
-  var option = self.option;
-  if (planKeys.indexOf(name) !== -1) {
-    return this.emitter.on(name, cb);
+  if (arguments.length < 2) {
+    self.emit('error', new Error('Arguments error!'));
+    if (callback) callback(new Error('Arguments error!'));
+    return;
   }
-  this.conn.blpop(name, 0, popcb);
-  this.blocking = true;
-
-  function popcb(err, replies) {
+  self.conn.rpush(list, JSON.stringify(task), function (err, len) {
     if (err) {
-      return self.emitter.emit('error', err);
-    }
-    var key = replies[0];
-    if (key !== name) {
-      return self.emitter.emit('error', 'name confict');
-    }
-    
-    var val;
-    try {
-      val = JSON.parse(replies[1]);
-    } catch (e) {
-      val = replies[1];
-    }
-
-    pre();
-    cb(val, next);
-    self.blocking = false;
-    check();
-  }
-
-  function pre() {
-    self.workerCount++;
-  }
-
-  function check() {
-    if (!self._ref) {
-      if (self.workerCount === 0) {
-        self.conn.end();
-        self.emitter.emit('close');
-      }
+      self.emit('error', err, list, task);
+      if (callback) callback(err, len);
       return;
     }
-    if (self.workerCount < option.maxCount || !option.maxCount) {
-      self.conn.blpop(name, 0, popcb);
-      self.blocking = true;
-    }
-  }
-
-  function next(err) {
-    self.workerCount--;
-    check();
-  }
+    if (callback) callback(err, len);
+    return;
+  });
 }
 
-module.exports = function(port, host, option) {
-  var env = {};
-  env._ref = true;
-  env.conn = redis.createClient.apply(this, arguments);
-  env.port = port;
-  env.host = host;
-  env.option = option || defaultOpt;
-  env.emitter = new EventEmitter();
-  env.workerCount = 0;
-  env.conn.on('error', function(err) {
-    emit.call(env, 'error', err);
-  });
-
-  var ret = plan.bind(env);
-  ret.close = function() {
-    if (env.blocking || env.blocking === undefined) {
-      env.conn.end();
-    } else {
-      env._ref = false;
-      env.conn.unref();
+Plan.prototype.dequeue = function dequeue(list, callback) {
+  var self = this;
+  if (arguments.length < 2) {
+    self.emit('error', new Error('Arguments error!'));
+    if (callback) callback(new Error('Arguments error!'));
+    return;
+  }
+  self.conn.blpop(list, 0, function (err, replies) {
+    if (err) {
+      self.emit('error', err, list);
+      if (callback) callback(err, list);
+      return;
     }
-    return ret;
-  };
-  ret.set = function(name, value) {
-    env.option[name] = value;
-    return ret;
-  };
+    return callback(err, JSON.parse(replies[1]), function next () {
+      self.dequeue(list, callback);
+    });
+  });
+}
 
-  return ret;
-};
+Plan.prototype.close = function close() {
+  this.conn.end();
+  this.emit('close');
+}
+
+module.exports = Plan;
